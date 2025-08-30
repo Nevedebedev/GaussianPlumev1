@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaussian Plume Pollutant Dispersion Graph Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-panel {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .output-panel {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .coordinate-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .coordinate-group input {
+            text-align: center;
+        }
+
+        .coordinate-labels {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .coordinate-labels span {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .graph-container {
+            width: 100%;
+            height: 500px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.1rem;
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: none;
+            color: #4facfe;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .coordinate-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gaussian Plume Pollutant Dispersion</h1>
+            <p>Graph Generator</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-panel">
+                <form id="plumeForm">
+                    <div class="form-group">
+                        <label for="emission_rate">Emission Rate (Q) - g/s</label>
+                        <input type="number" id="emission_rate" name="emission_rate" value="100" step="0.1" min="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stack_height">Stack Height (H) - meters</label>
+                        <input type="number" id="stack_height" name="stack_height" value="50" step="0.1" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Source Coordinates (X, Y, Z) - meters</label>
+                        <div class="coordinate-labels">
+                            <span>X (East)</span>
+                            <span>Y (North)</span>
+                            <span>Z (Height)</span>
+                        </div>
+                        <div class="coordinate-group">
+                            <input type="number" id="source_x" name="source_x" value="50" step="1">
+                            <input type="number" id="source_y" name="source_y" value="0" step="1">
+                            <input type="number" id="source_z" name="source_z" value="10" step="1">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stability_class">Stability Class</label>
+                        <select id="stability_class" name="stability_class">
+                            <option value="A">A - Very Unstable</option>
+                            <option value="B">B - Unstable</option>
+                            <option value="C">C - Slightly Unstable</option>
+                            <option value="D" selected>D - Neutral</option>
+                            <option value="E">E - Slightly Stable</option>
+                            <option value="F">F - Stable</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wind_speed">Wind Speed (U) - m/s</label>
+                        <input type="number" id="wind_speed" name="wind_speed" value="5" step="0.1" min="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="domain_x">Domain Size X - meters</label>
+                        <input type="number" id="domain_x" name="domain_x" value="2000" step="100" min="500">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="domain_y">Domain Size Y - meters</label>
+                        <input type="number" id="domain_y" name="domain_y" value="1000" step="100" min="200">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wind_direction">Wind Direction - degrees (0° = from North)</label>
+                        <input type="number" id="wind_direction" name="wind_direction" value="0" step="1" min="0" max="359">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Generate Graph</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="output-panel">
+                <div class="error" id="errorMessage"></div>
+                <div class="loading" id="loadingMessage">Generating graph...</div>
+                <div class="graph-container" id="graphContainer">
+                    <p>Configure parameters and click "Generate Graph" to see the dispersion visualization</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('plumeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loadingEl = document.getElementById('loadingMessage');
+            const errorEl = document.getElementById('errorMessage');
+            const graphEl = document.getElementById('graphContainer');
+            
+            // Show loading
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            graphEl.innerHTML = '<p style="color: #4facfe;">Generating graph...</p>';
+            
+            // Collect form data
+            const formData = new FormData(e.target);
+            const params = {
+                emission_rate: parseFloat(formData.get('emission_rate')),
+                stack_height: parseFloat(formData.get('stack_height')),
+                source_x: parseFloat(formData.get('source_x')),
+                source_y: parseFloat(formData.get('source_y')),
+                source_z: parseFloat(formData.get('source_z')),
+                stability_class: formData.get('stability_class'),
+                wind_speed: parseFloat(formData.get('wind_speed')),
+                domain_x: parseFloat(formData.get('domain_x')),
+                domain_y: parseFloat(formData.get('domain_y')),
+                wind_direction: parseFloat(formData.get('wind_direction'))
+            };
+            
+            try {
+                const response = await fetch('/generate_graph', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Display the graph
+                    graphEl.innerHTML = `<img src="data:image/png;base64,${result.image}" style="max-width: 100%; height: auto; border-radius: 8px;">`;
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                errorEl.textContent = `Error: ${error.message}`;
+                errorEl.style.display = 'block';
+                graphEl.innerHTML = '<p>Error generating graph. Please check your parameters and try again.</p>';
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        });
+        
+        function clearForm() {
+            document.getElementById('plumeForm').reset();
+            document.getElementById('graphContainer').innerHTML = '<p>Configure parameters and click "Generate Graph" to see the dispersion visualization</p>';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
