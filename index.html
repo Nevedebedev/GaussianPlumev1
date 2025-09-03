@@ -1,42 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gaussian Plume Pollutant Dispersion Graph Generator</title>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Gaussian Plume Pollutant Dispersion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: #fafafa;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+        .form-input {
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
-
-        .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            text-align: center;
-            padding: 30px;
+        .form-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+            outline: none;
         }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+        }
+    </style>
+</head>
+<body class="p-8">
+<div class="max-w-7xl mx-auto">
+    <header class="text-center py-6 bg-white border-b border-gray-200 shadow-sm rounded-t-xl">
+        <h1 class="text-4xl font-bold text-gray-800">Gaussian Plume Pollutant Dispersion</h1>
+        <p class="text-lg text-blue-500 mt-2">Graph Generator</p>
+    </header>
+    
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div class="space-y-6">
+            <!-- Emission Parameters Card -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span class="material-icons mr-2 text-gray-500">thermostat</span>
+                    Emission Parameters
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="emission-rate">Emission Rate (Q) - g/s</label>
+                        <input class="form-input" id="emission-rate" type="number" value="100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="stack-height">Stack Height (H) - meters</label>
+                        <input class="form-input" id="stack-height" type="number" value="50">
+                    </div>
+                </div>
+            </div>
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            <!-- Location & Environment Card -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span class="material-icons mr-2 text-gray-500">place</span>
+                    Location & Environment
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Source Coordinates (X, Y, Z) - meters</label>
+                        <div class="grid grid-cols-3 gap-4">
+                            <input class="form-input" placeholder="X (East)" type="number" value="50">
+                            <input class="form-input" placeholder="Y (North)" type="number" value="0">
+                            <input class="form-input" placeholder="Z (Height)" type="number" value="10">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="stability-class">Stability Class</label>
+                        <select class="form-input" id="stability-class">
+                            <option>A - Very Unstable</option>
+                            <option>B - Unstable</option>
+                            <option>C - Slightly Unstable</option>
+                            <option selected>D - Neutral</option>
+                            <option>E - Slightly Stable</option>
+                            <option>F - Stable</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="wind-speed">Wind Speed (U) - m/s</label>
+                        <input class="form-input" id="wind-speed" type="number" value="5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="wind-direction">Wind Direction - degrees (0° = from North)</label>
+                        <input class="form-input" id="wind-direction" type="number" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculation Domain Card -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <span class="material-icons mr-2 text-gray-500">grid_on</span>
+                    Calculation Domain
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="domain-x">Domain Size X - meters</label>
+                        <input class="form-input" id="domain-x" type="number" value="2000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="domain-y">Domain Size Y - meters</label>
+                        <input class="form-input" id="domain-y" type="number" value="1000">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-start space-x-4 pt-2">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                    Generate Graph
+                </button>
+                <button class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-6 rounded-lg border border-gray-300 transition-colors">
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Visualization Area -->
+        <div class="card flex items-center justify-center border-2 border-dashed border-gray-300">
+            <div class="text-center text-gray-500">
+                <p>Configure parameters and click "Generate Graph" to see the dispersion visualization</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Add interactivity here
+    document.querySelector('button.bg-blue-500').addEventListener('click', function() {
+        // Get form values
+        const formData = {
+            emissionRate: document.getElementById('emission-rate').value,
+            stackHeight: document.getElementById('stack-height').value,
+            stabilityClass: document.getElementById('stability-class').value,
+            windSpeed: document.getElementById('wind-speed').value,
+            windDirection: document.getElementById('wind-direction').value,
+            domainX: document.getElementById('domain-x').value,
+            domainY: document.getElementById('domain-y').value
+        };
+        
+        console.log('Form submitted with data:', formData);
+        // TODO: Add API call to backend
+    });
+
+    document.querySelector('button.bg-white').addEventListener('click', function() {
+        // Reset form
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.value = input.defaultValue || '';
+        });
+        document.getElementById('stability-class').selectedIndex = 3; // Set to D - Neutral
+    });
+</script>
+</body>
+</html>
             font-weight: 300;
         }
 
@@ -194,11 +319,97 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Gaussian Plume Pollutant Dispersion</h1>
-            <p>Graph Generator</p>
+<body class="p-8">
+<div class="max-w-7xl mx-auto">
+<header class="text-center py-6 bg-white border-b border-gray-200 shadow-sm rounded-t-xl">
+<h1 class="text-4xl font-bold text-gray-800">Gaussian Plume Pollutant Dispersion</h1>
+<p class="text-lg text-blue-500 mt-2">Graph Generator</p>
+</header>
+<main class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+<div class="space-y-6">
+<div class="card">
+<h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+<span class="material-icons mr-2 text-gray-500">thermostat</span>
+                        Emission Parameters
+                    </h2>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="emission-rate">Emission Rate (Q) - g/s</label>
+<input class="form-input" id="emission-rate" type="number" value="100"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="stack-height">Stack Height (H) - meters</label>
+<input class="form-input" id="stack-height" type="number" value="50"/>
+</div>
+</div>
+</div>
+<div class="card">
+<h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+<span class="material-icons mr-2 text-gray-500">place</span>
+                        Location &amp; Environment
+                    </h2>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Source Coordinates (X, Y, Z) - meters</label>
+<div class="grid grid-cols-3 gap-4">
+<input class="form-input" placeholder="X (East)" type="number" value="50"/>
+<input class="form-input" placeholder="Y (North)" type="number" value="0"/>
+<input class="form-input" placeholder="Z (Height)" type="number" value="10"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="stability-class">Stability Class</label>
+<select class="form-input" id="stability-class">
+<option>A - Very Unstable</option>
+<option>B - Unstable</option>
+<option>C - Slightly Unstable</option>
+<option selected="">D - Neutral</option>
+<option>E - Slightly Stable</option>
+<option>F - Stable</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="wind-speed">Wind Speed (U) - m/s</label>
+<input class="form-input" id="wind-speed" type="number" value="5"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="wind-direction">Wind Direction - degrees (0° = from North)</label>
+<input class="form-input" id="wind-direction" type="number" value="0"/>
+</div>
+</div>
+</div>
+<div class="card">
+<h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+<span class="material-icons mr-2 text-gray-500">grid_on</span>
+                        Calculation Domain
+                    </h2>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="domain-x">Domain Size X - meters</label>
+<input class="form-input" id="domain-x" type="number" value="2000"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-1" for="domain-y">Domain Size Y - meters</label>
+<input class="form-input" id="domain-y" type="number" value="1000"/>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-start space-x-4 pt-2">
+<button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                        Generate Graph
+                    </button>
+<button class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-6 rounded-lg border border-gray-300 transition-colors">
+                        Clear
+                    </button>
+</div>
+</div>
+<div class="card flex items-center justify-center border-2 border-dashed border-gray-300">
+<div class="text-center text-gray-500">
+<p>Configure parameters and click "Generate Graph" to see the dispersion visualization</p>
+</div>
+</div>
+</main>
+</div>
         </div>
         
         <div class="content">
