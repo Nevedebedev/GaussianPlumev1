@@ -39,7 +39,12 @@ def generate_graph():
         return response
     try:
         # Get parameters from request
-        params = request.json
+        if not request.is_json:
+            raise ValueError("Request must be JSON")
+            
+        params = request.get_json()
+        if not params:
+            raise ValueError("No JSON data received")
         
         # Extract and validate parameters
         Q = float(params.get('emission_rate', 100))
@@ -86,14 +91,20 @@ def generate_graph():
         return response
         
     except Exception as e:
-        error_response = jsonify({
-            "success": False, 
-            "error": str(e)
-        })
+        import traceback
+        error_details = {
+            "success": False,
+            "error": str(e),
+            "type": type(e).__name__,
+            "traceback": traceback.format_exc()
+        }
+        print(f"Error: {error_details}")  # This will appear in Vercel logs
+        
+        error_response = jsonify(error_details)
         error_response.headers.add('Access-Control-Allow-Origin', '*')
         error_response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         error_response.headers.add('Access-Control-Allow-Methods', 'POST')
-        return error_response, 400
+        return error_response, 500
 
 # This is required for Vercel
 handler = app
