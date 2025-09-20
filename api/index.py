@@ -1,23 +1,17 @@
 from flask import Flask, request, jsonify, send_from_directory
-import os
-import sys
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # Use non-GUI backend
 import matplotlib.pyplot as plt
-import base64
 import io
-import json
+import base64
+import os
+import sys
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Add the scripts directory to the path
-current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(current_dir, 'scripts'))
-
-try:
-    from GaussianPlumev2 import vectorized_gaussian_plume_3d, vectorized_dispersion_coefficients
-except ImportError as e:
-    print(f"Error importing GaussianPlumev2: {e}")
-    raise
+# Add scripts directory to path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+from SimplePlume import simple_gaussian_plume_3d
 
 app = Flask(__name__, static_folder='../public')
 
@@ -59,15 +53,34 @@ def generate_graph():
         wind_dir = float(params.get('wind_direction', 0))
 
         # Your existing graph generation code here
-        # For now, let's just return a test response
-        import matplotlib.pyplot as plt
-        import io
-        import base64
-        
+        # Generate concentration field using the simplified function
+        X = np.linspace(0, domain_x, 100)
+        Y = np.linspace(0, domain_y, 100)
+        X, Y = np.meshgrid(X, Y)
+        Z = np.zeros_like(X)
+        stability_class_idx = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5}.get(stability_class, 3)
+        domain_z = 1000.0
+
+        concentration = simple_gaussian_plume_3d(
+            X, Y, Z,
+            Q, U, H,
+            xs, ys, zs,
+            stability_class_idx,
+            urban=False,
+            mixing_height=domain_z,
+            deposition_velocity=0.0,
+            decay_rate=0.0,
+            wind_dir_deg=0.0,
+            H_is_effective=True,
+            sigma_y0=5.0,
+            sigma_z0=2.0,
+            meander_std_deg=0.0
+        )
+
         # Create a simple plot
         plt.figure(figsize=(10, 6))
-        plt.plot([0, 1, 2, 3, 4], [0, 1, 4, 9, 16])
-        plt.title('Test Plot')
+        plt.imshow(concentration, cmap='viridis', origin='lower', extent=[0, domain_x, 0, domain_y])
+        plt.title('Concentration Field')
         
         # Save plot to a bytes buffer
         buf = io.BytesIO()
