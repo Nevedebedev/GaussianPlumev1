@@ -306,7 +306,9 @@
             };
             
             try {
-                const response = await fetch('/generate_graph', {
+                // Use absolute URL for API endpoint
+                const baseUrl = window.location.origin;
+                const response = await fetch(`${baseUrl}/api/generate_graph`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
