@@ -29,8 +29,14 @@ def serve():
 def serve_static(path):
     return send_from_directory('../public', path)
 
-@app.route('/api/generate_graph', methods=['POST'])
+@app.route('/api/generate_graph', methods=['POST', 'OPTIONS'])
 def generate_graph():
+    if request.method == 'OPTIONS':
+        response = jsonify({'message': 'Preflight check passed'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        return response
     try:
         # Get parameters from request
         params = request.json
@@ -47,13 +53,47 @@ def generate_graph():
         domain_y = float(params.get('domain_y', 1000))
         wind_dir = float(params.get('wind_direction', 0))
 
-        # Rest of your existing generate_graph function...
-        # [Previous implementation here]
+        # Your existing graph generation code here
+        # For now, let's just return a test response
+        import matplotlib.pyplot as plt
+        import io
+        import base64
         
-        return jsonify({"success": True, "image": "base64_encoded_image_here"})
+        # Create a simple plot
+        plt.figure(figsize=(10, 6))
+        plt.plot([0, 1, 2, 3, 4], [0, 1, 4, 9, 16])
+        plt.title('Test Plot')
+        
+        # Save plot to a bytes buffer
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        
+        # Convert to base64
+        img_str = base64.b64encode(buf.read()).decode('ascii')
+        plt.close()
+        
+        # Create response with CORS headers
+        response = jsonify({
+            "success": True, 
+            "image": img_str
+        })
+        
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST')
+        
+        return response
         
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+        error_response = jsonify({
+            "success": False, 
+            "error": str(e)
+        })
+        error_response.headers.add('Access-Control-Allow-Origin', '*')
+        error_response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        error_response.headers.add('Access-Control-Allow-Methods', 'POST')
+        return error_response, 400
 
 # This is required for Vercel
 handler = app
